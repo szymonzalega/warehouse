@@ -1,5 +1,6 @@
 package com.warehouse.service;
 
+import com.warehouse.repository.CompanyRepository;
 import com.warehouse.service.dto.Company;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,7 +16,10 @@ import java.util.List;
 @Service
 public class CompanyService {
 
-    public CompanyService() {
+    private final CompanyRepository companyRepository;
+
+    public CompanyService(CompanyRepository companyRepository) {
+        this.companyRepository = companyRepository;
     }
 
     private Elements parsePageForCompanyElement(Document doc) {
@@ -72,10 +76,15 @@ public class CompanyService {
 
     public List<Company> getCompanyList(String searchValue) {
 
+        List<com.warehouse.domain.Company> x = companyRepository.findAll();
+
+
         Integer pageNumber = 1;
         Integer lastAvailablePage = pageNumber;
 
         List<Company> allCompaniesList = new ArrayList<>();
+
+
 
         do{
             Document doc = parsePage(buildUrlToParse(searchValue, pageNumber));
@@ -86,7 +95,12 @@ public class CompanyService {
             List<Company> companiesOnePage = getCompaniesList(companyElements);
             allCompaniesList.addAll(companiesOnePage);
         }
-        while(lastAvailablePage > pageNumber);
+        while(5 > pageNumber);
+
+        com.warehouse.domain.Company y = new com.warehouse.domain.Company("name", "mailaddress");
+        companyRepository.save(y);
+
+        //companyRepository.save(allCompaniesList);
 
         return allCompaniesList;
     }
