@@ -1,12 +1,9 @@
 DROP TABLE IF EXISTS company;
 
 CREATE TABLE company(
-  id INT AUTO_INCREMENT  PRIMARY KEY,
+  id VARCHAR(250) NOT NULL PRIMARY KEY,
   name VARCHAR(250) NOT NULL,
-  mailAddress VARCHAR(250) DEFAULT NULL
+  mailAddress VARCHAR(250) DEFAULT NULL,
+  address VARCHAR(250) DEFAULT NULL,
+  rank INT DEFAULT NULL,
 );
-
-INSERT INTO company (name, mailAddress) VALUES
-  ('Aliko', 'Dangote'),
-  ('Bill', 'Gates'),
-  ('Folrunsho', 'Billionaire Oil Magnate');

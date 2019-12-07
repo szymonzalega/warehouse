@@ -1,7 +1,7 @@
 package com.warehouse.service;
 
+import com.warehouse.domain.Company;
 import com.warehouse.repository.CompanyRepository;
-import com.warehouse.service.dto.Company;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -56,9 +56,12 @@ public class CompanyService {
         List<Company> companiesList = new ArrayList<>();
 
         for (Element company : companyElements) {
+            String id = company.attr("data-eid");
             String title = company.select("h2 a").text();
             String mailAddress = company.select("ul.business-card-bottom-bar li:nth-child(3) a").attr("href").replace("mailto:", "");
-            companiesList.add(new Company(title, mailAddress));
+            String address = company.select("div.row.business-card-top-bar div.business-card-top-bar-address span").text();
+            Integer rank = Integer.parseInt(company.select("div.row.business-card-top-bar div.star-rating.d-inline-block div.star-rating-active").attr("style").split(":")[1].replace("%;", "").replace(" ", "")) / 20;
+            companiesList.add(new Company(id, title, mailAddress, address, rank));
         }
 
         return companiesList;
@@ -76,7 +79,7 @@ public class CompanyService {
 
     public List<Company> getCompanyList(String searchValue) {
 
-        List<com.warehouse.domain.Company> x = companyRepository.findAll();
+        List<Company> x = companyRepository.findAll();
 
 
         Integer pageNumber = 1;
@@ -97,10 +100,10 @@ public class CompanyService {
         }
         while(5 > pageNumber);
 
-        com.warehouse.domain.Company y = new com.warehouse.domain.Company("name", "mailaddress");
-        companyRepository.save(y);
+        /*com.warehouse.domain.Company y = new com.warehouse.domain.Company("name", "mailaddress");
+        companyRepository.save(y);*/
 
-        //companyRepository.save(allCompaniesList);
+        companyRepository.saveAll(allCompaniesList);
 
         return allCompaniesList;
     }

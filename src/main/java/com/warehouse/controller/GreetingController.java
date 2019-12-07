@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.warehouse.domain.Company;
 import com.warehouse.service.CompanyService;
-import com.warehouse.service.dto.Company;
 import com.warehouse.service.dto.Greeting;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
