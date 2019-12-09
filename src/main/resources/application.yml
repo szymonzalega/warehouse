@@ -1,9 +1,9 @@
 spring:
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/easysettle;DB_CLOSE_DELAY=-1
-    username: sa
-    password: password
+    url: jdbc:h2:tcp://localhost/warehouse
+    username: SA
+    password:
+    driverClassName: org.h2.Driver
   h2:
     console:
       enabled: false

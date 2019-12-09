@@ -61,7 +61,8 @@ public class CompanyService {
             String mailAddress = company.select("ul.business-card-bottom-bar li:nth-child(3) a").attr("href").replace("mailto:", "");
             String address = company.select("div.row.business-card-top-bar div.business-card-top-bar-address span").text();
             Integer rank = Integer.parseInt(company.select("div.row.business-card-top-bar div.star-rating.d-inline-block div.star-rating-active").attr("style").split(":")[1].replace("%;", "").replace(" ", "")) / 20;
-            companiesList.add(new Company(id, title, mailAddress, address, rank));
+            String companyDetailsUrl = company.attr("data-href");
+            companiesList.add(new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null));
         }
 
         return companiesList;
@@ -98,7 +99,7 @@ public class CompanyService {
             List<Company> companiesOnePage = getCompaniesList(companyElements);
             allCompaniesList.addAll(companiesOnePage);
         }
-        while(5 > pageNumber);
+        while(1 > pageNumber);
 
         /*com.warehouse.domain.Company y = new com.warehouse.domain.Company("name", "mailaddress");
         companyRepository.save(y);*/

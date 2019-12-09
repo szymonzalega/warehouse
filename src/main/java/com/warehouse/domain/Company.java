@@ -1,13 +1,15 @@
 package com.warehouse.domain;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "companyx")
+@Table(name = "company")
 public class Company {
 
     @Id
+    @Column(name = "company_id")
     private String id;
 
     @Column(name = "name", nullable = false)
@@ -22,15 +24,25 @@ public class Company {
     @Column(name = "rank", nullable = false)
     private Integer rank;
 
+    @Column(name = "company_details_url", nullable = true)
+    private String companyDetailsUrl;
+
+    @OneToMany(cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "company")
+    private Set<Review> reviews = new HashSet<>();
+
     public Company() {
     }
 
-    public Company(String id, String name, String mailAddress, String address, Integer rank) {
+    public Company(String id, String name, String mailAddress, String address, Integer rank, String companyDetailsUrl, Set<Review> reviews) {
         this.id = id;
         this.name = name;
         this.mailAddress = mailAddress;
         this.address = address;
         this.rank = rank;
+        this.companyDetailsUrl = companyDetailsUrl;
+        this.reviews = reviews;
     }
 
     public String getAddress() {
@@ -73,6 +85,22 @@ public class Company {
         this.mailAddress = mailAddress;
     }
 
+    public String getCompanyDetailsUrl() {
+        return companyDetailsUrl;
+    }
+
+    public void setCompanyDetailsUrl(String companyDetailsUrl) {
+        this.companyDetailsUrl = companyDetailsUrl;
+    }
+
+    public Set<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Set<Review> reviews) {
+        this.reviews = reviews;
+    }
+
     @Override
     public String toString() {
         return "Company{" +
@@ -81,6 +109,8 @@ public class Company {
                 ", mailAddress='" + mailAddress + '\'' +
                 ", address='" + address + '\'' +
                 ", rank=" + rank +
+                ", companyDetailsUrl='" + companyDetailsUrl + '\'' +
+                ", reviews=" + reviews +
                 '}';
     }
 }

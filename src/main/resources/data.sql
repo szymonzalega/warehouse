@@ -1,9 +1,18 @@
 DROP TABLE IF EXISTS company;
+DROP TABLE IF EXISTS reviews;
 
 CREATE TABLE company(
-  id VARCHAR(250) NOT NULL PRIMARY KEY,
+  company_id VARCHAR(250) NOT NULL PRIMARY KEY,
   name VARCHAR(250) NOT NULL,
-  mailAddress VARCHAR(250) DEFAULT NULL,
+  mail_address VARCHAR(250) DEFAULT NULL,
   address VARCHAR(250) DEFAULT NULL,
   rank INT DEFAULT NULL,
+  company_details_url VARCHAR(250) DEFAULT NULL,
+);
+
+CREATE TABLE reviews(
+  id INT DEFAULT NULL PRIMARY KEY,
+  company_id VARCHAR(250) NOT NULL,
+  content VARCHAR(250) NOT NULL,
+  FOREIGN KEY (company_id) REFERENCES company(company_id)
 );
