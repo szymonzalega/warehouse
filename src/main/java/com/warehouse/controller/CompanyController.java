@@ -21,11 +21,11 @@ public class CompanyController {
         this.reviewRepository = reviewRepository;
     }
 
-    @GetMapping("/greeting")
+    @GetMapping("/company")
     @CrossOrigin(origins = "http://localhost:3000")
     List<Company> companies(@RequestParam String searchValue) throws IOException {
 
-        return companyService.getCompanyList(searchValue);
+        return companyService.getAllCompany(searchValue);
     }
 
     @GetMapping("/review")
@@ -34,4 +34,10 @@ public class CompanyController {
 
         return reviewRepository.findAll();
     }
+
+   /* @GetMapping("/getReviewsForCompany")
+    @CrossOrigin(origins = "http://localhost:3000")
+    List<Company> companiesWithReviews() throws IOException {
+        return companyService.getCompaniesWithReviews();
+    }*/
 }

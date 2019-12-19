@@ -1,15 +1,14 @@
 package com.warehouse.service;
 
 import com.warehouse.domain.Company;
+import com.warehouse.domain.Review;
 import com.warehouse.repository.CompanyRepository;
-import org.jsoup.Jsoup;
+import com.warehouse.repository.ReviewRepository;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,24 +16,16 @@ import java.util.List;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final ReviewRepository reviewRepository;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    private final PageService pageService;
+    private final ReviewService reviewService;
+
+    public CompanyService(CompanyRepository companyRepository, ReviewRepository reviewRepository, PageService pageService, ReviewService reviewService) {
         this.companyRepository = companyRepository;
-    }
-
-    private Elements parsePageForCompanyElement(Document doc) {
-
-        Elements elements = new Elements();
-
-        elements = doc.select("#serpContent > article > ul li.business-card");
-
-        return elements;
-    }
-
-    private String getLastAvailablePage(Document doc) {
-        Elements paginationElements = doc.select("#pagination a");
-        paginationElements.remove(paginationElements.size() - 1);
-        return paginationElements.last().text();
+        this.reviewRepository = reviewRepository;
+        this.pageService = pageService;
+        this.reviewService = reviewService;
     }
 
     private String buildUrlToParse(String searchValue, Integer pageNumber) {
@@ -52,33 +43,55 @@ public class CompanyService {
         return url.toString();
     }
 
+    private Elements parsePageForCompanyElement(Document doc) {
+
+        return doc.select("#serpContent > article > ul li.business-card");
+    }
+
     private List<Company> getCompaniesList(Elements companyElements) {
         List<Company> companiesList = new ArrayList<>();
 
         for (Element company : companyElements) {
-            String id = company.attr("data-eid");
-            String title = company.select("h2 a").text();
-            String mailAddress = company.select("ul.business-card-bottom-bar li:nth-child(3) a").attr("href").replace("mailto:", "");
-            String address = company.select("div.row.business-card-top-bar div.business-card-top-bar-address span").text();
-            Integer rank = Integer.parseInt(company.select("div.row.business-card-top-bar div.star-rating.d-inline-block div.star-rating-active").attr("style").split(":")[1].replace("%;", "").replace(" ", "")) / 20;
-            String companyDetailsUrl = company.attr("data-href");
-            companiesList.add(new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null));
+            Company companyWithData = getDataFromCompany(company);
+            companiesList.add(companyWithData);
         }
 
         return companiesList;
     }
 
-    private Document parsePage(String url) {
-        try {
-            Document doc = Jsoup.connect(url).get();
-            return doc;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private Company getDataFromCompany(Element company) {
+        String id = company
+                .attr("data-eid");
+        String title = company
+                .select("h2 a")
+                .text();
+        String mailAddress = company
+                .select("ul.business-card-bottom-bar li:nth-child(3) a")
+                .attr("href")
+                .replace("mailto:", "");
+        String address = company
+                .select("div.row.business-card-top-bar div.business-card-top-bar-address span")
+                .text();
+        Integer rank = Integer.parseInt(company.
+                select("div.row.business-card-top-bar div.star-rating.d-inline-block div.star-rating-active")
+                .attr("style")
+                .split(":")[1]
+                .replace("%;", "")
+                .replace(" ", "")) / 20;
+        String companyDetailsUrl = company
+                .attr("data-href");
+        Integer reviewsAmount = Character.getNumericValue(company
+                .select("div.reviews-count")
+                .text()
+                .charAt(1));
+
+        Company companyWithData = new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null, reviewsAmount);
+        companyWithData.setReviews(reviewService.getElementsWithReviews(companyWithData));
+
+        return companyWithData;
     }
 
-    public List<Company> getCompanyList(String searchValue) {
+    public List<Company> getAllCompany(String searchValue) {
 
         List<Company> x = companyRepository.findAll();
 
@@ -88,24 +101,34 @@ public class CompanyService {
 
         List<Company> allCompaniesList = new ArrayList<>();
 
-
-
         do{
-            Document doc = parsePage(buildUrlToParse(searchValue, pageNumber));
-            lastAvailablePage = Integer.parseInt(getLastAvailablePage(doc));
+            Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));
+            lastAvailablePage = Integer.parseInt(pageService.getLastAvailablePage(doc));
             pageNumber++;
 
             Elements companyElements = parsePageForCompanyElement(doc);
             List<Company> companiesOnePage = getCompaniesList(companyElements);
             allCompaniesList.addAll(companiesOnePage);
         }
-        while(1 > pageNumber);
-
-        /*com.warehouse.domain.Company y = new com.warehouse.domain.Company("name", "mailaddress");
-        companyRepository.save(y);*/
+        while(1 > pageNumber);  //TODO change 1 to lastAvailablePage variable
 
         companyRepository.saveAll(allCompaniesList);
 
         return allCompaniesList;
     }
+
+    /*public List<Company> getCompaniesWithReviews() {
+        List<Company> companiesWithReviews = companyRepository.findByReviewsAmountGreaterThan(0);
+
+        for(Company company: companiesWithReviews) {
+            Document parsedPage = pageService.parsePage(company.getCompanyDetailsUrl());
+            Elements reviewsElement = reviewService.parsePageForReviews(parsedPage);
+            List<Review> reviewsList = reviewService.getReviewsList(reviewsElement, company);
+            reviewRepository.saveAll(reviewsList);
+        }
+
+        return companiesWithReviews;
+    }*/
+
+
 }

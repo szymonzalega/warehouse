@@ -8,11 +8,12 @@ CREATE TABLE company(
   address VARCHAR(250) DEFAULT NULL,
   rank INT DEFAULT NULL,
   company_details_url VARCHAR(250) DEFAULT NULL,
+  reviews_amount INT DEFAULT NULL
 );
 
 CREATE TABLE reviews(
   id INT DEFAULT NULL PRIMARY KEY,
   company_id VARCHAR(250) NOT NULL,
-  content VARCHAR(250) NOT NULL,
+  content VARCHAR(2048) NOT NULL,
   FOREIGN KEY (company_id) REFERENCES company(company_id)
 );
