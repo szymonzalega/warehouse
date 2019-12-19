@@ -9,6 +9,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,18 +73,26 @@ public class CompanyService {
         String address = company
                 .select("div.row.business-card-top-bar div.business-card-top-bar-address span")
                 .text();
-        Integer rank = Integer.parseInt(company.
-                select("div.row.business-card-top-bar div.star-rating.d-inline-block div.star-rating-active")
-                .attr("style")
-                .split(":")[1]
-                .replace("%;", "")
-                .replace(" ", "")) / 20;
+
+        Elements rankElem = company.select("div.star-rating div.star-rating-active");
+        Integer rank = 0;
+
+        if (rankElem != null) {
+            rank = Integer.parseInt(rankElem
+                    .attr("style")
+                    .split(":")[1]
+                    .replace("%;", "")
+                    .replace(" ", "")) / 20;
+        }
+
         String companyDetailsUrl = company
                 .attr("data-href");
         Integer reviewsAmount = Character.getNumericValue(company
                 .select("div.reviews-count")
                 .text()
                 .charAt(1));
+
+        System.out.println("title: " + title);
 
         Company companyWithData = new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null, reviewsAmount);
         companyWithData.setReviews(reviewService.getElementsWithReviews(companyWithData));
@@ -101,7 +110,8 @@ public class CompanyService {
 
         List<Company> allCompaniesList = new ArrayList<>();
 
-        do{
+        do {
+            System.out.println("page: " + pageNumber);
             Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));
             lastAvailablePage = Integer.parseInt(pageService.getLastAvailablePage(doc));
             pageNumber++;
@@ -110,7 +120,7 @@ public class CompanyService {
             List<Company> companiesOnePage = getCompaniesList(companyElements);
             allCompaniesList.addAll(companiesOnePage);
         }
-        while(1 > pageNumber);  //TODO change 1 to lastAvailablePage variable
+        while (lastAvailablePage > pageNumber);  //TODO change 1 to lastAvailablePage variable
 
         companyRepository.saveAll(allCompaniesList);
 
