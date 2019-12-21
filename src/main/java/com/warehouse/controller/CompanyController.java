@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.warehouse.domain.Company;
 import com.warehouse.domain.Review;
+import com.warehouse.dto.ExtractResponse;
 import com.warehouse.repository.ReviewRepository;
 import com.warehouse.service.CompanyService;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +22,18 @@ public class CompanyController {
         this.reviewRepository = reviewRepository;
     }
 
-    @GetMapping("/company")
+    @GetMapping("/extract")
+    @CrossOrigin(origins = "http://localhost:3000")
+    ExtractResponse extract(@RequestParam String searchValue) throws IOException {
+
+        return new ExtractResponse(searchValue, companyService.extract(searchValue) -1);
+    }
+
+    @GetMapping("/transform")
     @CrossOrigin(origins = "http://localhost:3000")
     List<Company> companies(@RequestParam String searchValue) throws IOException {
 
-        return companyService.getAllCompany(searchValue);
+        return companyService.transform(searchValue);
     }
 
     @GetMapping("/review")

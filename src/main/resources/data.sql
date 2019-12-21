@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS company;
 DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS pages;
 
 CREATE TABLE company(
   company_id VARCHAR(250) NOT NULL PRIMARY KEY,
@@ -16,4 +17,10 @@ CREATE TABLE reviews(
   company_id VARCHAR(250) NOT NULL,
   content VARCHAR(2048) NOT NULL,
   FOREIGN KEY (company_id) REFERENCES company(company_id)
+);
+
+CREATE TABLE pages(
+  id INT DEFAULT NULL PRIMARY KEY,
+  search_value VARCHAR(250) NOT NULL,
+  page CLOB NOT NULL
 );

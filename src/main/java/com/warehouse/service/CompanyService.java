@@ -1,15 +1,15 @@
 package com.warehouse.service;
 
 import com.warehouse.domain.Company;
-import com.warehouse.domain.Review;
+import com.warehouse.domain.Page;
 import com.warehouse.repository.CompanyRepository;
+import com.warehouse.repository.PageRepository;
 import com.warehouse.repository.ReviewRepository;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +18,15 @@ public class CompanyService {
 
     private final CompanyRepository companyRepository;
     private final ReviewRepository reviewRepository;
+    private final PageRepository pageRepository;
 
     private final PageService pageService;
     private final ReviewService reviewService;
 
-    public CompanyService(CompanyRepository companyRepository, ReviewRepository reviewRepository, PageService pageService, ReviewService reviewService) {
+    public CompanyService(CompanyRepository companyRepository, ReviewRepository reviewRepository, PageRepository pageRepository, PageService pageService, ReviewService reviewService) {
         this.companyRepository = companyRepository;
         this.reviewRepository = reviewRepository;
+        this.pageRepository = pageRepository;
         this.pageService = pageService;
         this.reviewService = reviewService;
     }
@@ -92,53 +94,47 @@ public class CompanyService {
                 .text()
                 .charAt(1));
 
-        System.out.println("title: " + title);
-
         Company companyWithData = new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null, reviewsAmount);
         companyWithData.setReviews(reviewService.getElementsWithReviews(companyWithData));
 
         return companyWithData;
     }
 
-    public List<Company> getAllCompany(String searchValue) {
-
-        List<Company> x = companyRepository.findAll();
-
+    public Integer extract(String searchValue) {
 
         Integer pageNumber = 1;
         Integer lastAvailablePage = pageNumber;
 
-        List<Company> allCompaniesList = new ArrayList<>();
+        List<Page> pages = new ArrayList<>();
 
         do {
-            System.out.println("page: " + pageNumber);
             Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));
             lastAvailablePage = Integer.parseInt(pageService.getLastAvailablePage(doc));
             pageNumber++;
 
+            Page page = new Page(searchValue, doc.toString());
+            pages.add(page);
+
+        }
+        while (lastAvailablePage >= pageNumber);
+
+        pageRepository.saveAll(pages);
+        return pageNumber;
+    }
+
+    public List<Company> transform(String searchValue) {
+
+        List<Page> pages = pageRepository.findBySearchValue(searchValue);
+        List<Company> allCompaniesList = new ArrayList<>();
+
+        for (Page page : pages) {
+            Document doc = pageService.parsePageFromHtml(page.getPage());
             Elements companyElements = parsePageForCompanyElement(doc);
             List<Company> companiesOnePage = getCompaniesList(companyElements);
             allCompaniesList.addAll(companiesOnePage);
         }
-        while (lastAvailablePage > pageNumber);  //TODO change 1 to lastAvailablePage variable
 
         companyRepository.saveAll(allCompaniesList);
-
         return allCompaniesList;
     }
-
-    /*public List<Company> getCompaniesWithReviews() {
-        List<Company> companiesWithReviews = companyRepository.findByReviewsAmountGreaterThan(0);
-
-        for(Company company: companiesWithReviews) {
-            Document parsedPage = pageService.parsePage(company.getCompanyDetailsUrl());
-            Elements reviewsElement = reviewService.parsePageForReviews(parsedPage);
-            List<Review> reviewsList = reviewService.getReviewsList(reviewsElement, company);
-            reviewRepository.saveAll(reviewsList);
-        }
-
-        return companiesWithReviews;
-    }*/
-
-
 }
