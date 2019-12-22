@@ -45,5 +45,4 @@ public class PageService {
         paginationElements.remove(paginationElements.size() - 1);
         return paginationElements.last().text();
     }
-
 }

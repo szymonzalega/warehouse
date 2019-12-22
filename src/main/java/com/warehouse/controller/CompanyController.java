@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.warehouse.domain.Company;
 import com.warehouse.domain.Review;
-import com.warehouse.dto.ExtractResponse;
+import com.warehouse.dto.SearchResponse;
 import com.warehouse.repository.ReviewRepository;
 import com.warehouse.service.CompanyService;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +24,9 @@ public class CompanyController {
 
     @GetMapping("/extract")
     @CrossOrigin(origins = "http://localhost:3000")
-    ExtractResponse extract(@RequestParam String searchValue) throws IOException {
+    SearchResponse extract(@RequestParam String searchValue, @RequestParam Integer pageAmount) throws IOException {
 
-        return new ExtractResponse(searchValue, companyService.extract(searchValue) -1);
+        return new SearchResponse(searchValue, companyService.extract(searchValue, pageAmount) -1);
     }
 
     @GetMapping("/transform")
@@ -41,6 +41,13 @@ public class CompanyController {
     List<Review> reviews() throws IOException {
 
         return reviewRepository.findAll();
+    }
+
+    @GetMapping("/pageAmount")
+    @CrossOrigin(origins = "http://localhost:3000")
+    SearchResponse getPageAmount(@RequestParam String searchValue) throws IOException {
+
+        return new SearchResponse(searchValue, companyService.getPageAmount(searchValue));
     }
 
    /* @GetMapping("/getReviewsForCompany")

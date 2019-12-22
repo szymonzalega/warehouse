@@ -100,23 +100,37 @@ public class CompanyService {
         return companyWithData;
     }
 
-    public Integer extract(String searchValue) {
+    public Integer getPageAmount(String searchValue) {
 
         Integer pageNumber = 1;
-        Integer lastAvailablePage = pageNumber;
+        Integer companyAmount = 0;
+        Double companyPerPage = 25.0;
 
+        Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));
+
+        Elements companyAmountElem = doc.select("#resultCount");
+
+        if (companyAmountElem.first() != null) {
+            companyAmount = Integer.parseInt(companyAmountElem.first().text().replace(" ", ""));
+            return (int) Math.ceil(companyAmount / companyPerPage);
+        }
+        return null;
+    }
+
+    public Integer extract(String searchValue, Integer pageAmount) {
+
+        Integer pageNumber = 1;
         List<Page> pages = new ArrayList<>();
 
         do {
             Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));
-            lastAvailablePage = Integer.parseInt(pageService.getLastAvailablePage(doc));
             pageNumber++;
 
             Page page = new Page(searchValue, doc.toString());
             pages.add(page);
 
         }
-        while (lastAvailablePage >= pageNumber);
+        while (pageAmount >= pageNumber);
 
         pageRepository.saveAll(pages);
         return pageNumber;

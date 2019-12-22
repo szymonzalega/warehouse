@@ -1,11 +1,11 @@
 package com.warehouse.dto;
 
-public class ExtractResponse {
+public class SearchResponse {
 
     private String searchValue;
     private Integer pageAmount;
 
-    public ExtractResponse(String searchValue, Integer pageAmount) {
+    public SearchResponse(String searchValue, Integer pageAmount) {
         this.searchValue = searchValue;
         this.pageAmount = pageAmount;
     }
