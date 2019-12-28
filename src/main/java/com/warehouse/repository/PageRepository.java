@@ -14,6 +14,8 @@ public interface PageRepository extends CrudRepository<Page, Long> {
     @Query("select p from Page p where p.searchValue = :searchValue")
     List<Page> findBySearchValue(@Param("searchValue") String searchValue);
 
+    void deleteAllBySearchValue(String searchValue);
+
     List<Page> findAll();
 
 }

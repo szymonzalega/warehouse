@@ -10,6 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,10 +118,13 @@ public class CompanyService {
         return null;
     }
 
+    @Transactional
     public Integer extract(String searchValue, Integer pageAmount) {
 
         Integer pageNumber = 1;
         List<Page> pages = new ArrayList<>();
+
+        pageRepository.deleteAllBySearchValue(searchValue);
 
         do {
             Document doc = pageService.parsePage(buildUrlToParse(searchValue, pageNumber));

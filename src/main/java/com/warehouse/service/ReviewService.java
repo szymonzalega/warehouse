@@ -22,14 +22,15 @@ public class ReviewService {
     public List<Review> getElementsWithReviews(Company company) {
 
         Document parsedPage = pageService.parsePage(company.getCompanyDetailsUrl());
-        Elements reviewsElement = parsePageForReviews(parsedPage);
-        List<Review> reviewsList = getReviewsList(reviewsElement, company);
-
-        return reviewsList;
+        if(parsedPage != null) {
+            Elements reviewsElement = parsePageForReviews(parsedPage);
+            List<Review> reviewsList = getReviewsList(reviewsElement, company);
+            return reviewsList;
+        }
+        return new ArrayList<>();
     }
 
     public Elements parsePageForReviews(Document doc) {
-
         return doc.select("#reviews div.review-item");
     }
 
