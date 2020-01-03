@@ -52,18 +52,18 @@ public class CompanyService {
         return doc.select("#serpContent > article > ul li.business-card");
     }
 
-    private List<Company> getCompaniesList(Elements companyElements) {
+    private List<Company> getCompaniesList(Elements companyElements, Boolean areReviews) {
         List<Company> companiesList = new ArrayList<>();
 
         for (Element company : companyElements) {
-            Company companyWithData = getDataFromCompany(company);
+            Company companyWithData = getDataFromCompany(company, areReviews);
             companiesList.add(companyWithData);
         }
 
         return companiesList;
     }
 
-    private Company getDataFromCompany(Element company) {
+    private Company getDataFromCompany(Element company, Boolean areReviews) {
         String id = company
                 .attr("data-eid");
         String title = company
@@ -95,8 +95,11 @@ public class CompanyService {
                 .text()
                 .charAt(1));
 
-        Company companyWithData = new Company(id, title, mailAddress, address, rank, companyDetailsUrl, null, reviewsAmount);
-        companyWithData.setReviews(reviewService.getElementsWithReviews(companyWithData));
+        Company companyWithData = new Company(id, title, mailAddress, address, rank, companyDetailsUrl, new ArrayList<>(), reviewsAmount);
+
+        if(areReviews) {
+            companyWithData.setReviews(reviewService.getElementsWithReviews(companyWithData));
+        }
 
         return companyWithData;
     }
@@ -140,7 +143,7 @@ public class CompanyService {
         return pageNumber;
     }
 
-    public List<Company> transform(String searchValue) {
+    public List<Company> transform(String searchValue, Boolean areReviews) {
 
         List<Page> pages = pageRepository.findBySearchValue(searchValue);
         List<Company> allCompaniesList = new ArrayList<>();
@@ -148,9 +151,20 @@ public class CompanyService {
         for (Page page : pages) {
             Document doc = pageService.parsePageFromHtml(page.getPage());
             Elements companyElements = parsePageForCompanyElement(doc);
-            List<Company> companiesOnePage = getCompaniesList(companyElements);
+            List<Company> companiesOnePage = getCompaniesList(companyElements, areReviews);
             allCompaniesList.addAll(companiesOnePage);
         }
+
+        companyRepository.saveAll(allCompaniesList);
+        return allCompaniesList;
+    }
+
+    @Transactional
+    public List<Company> allProcess(String searchValue, Boolean areReviews) {
+
+//        Integer pageAmount = getPageAmount(searchValue); commented because it's too much pages'
+        extract(searchValue, 10); //hardcoded because it's too much pages, if you want you can change
+        List<Company> allCompaniesList = transform(searchValue, areReviews);
 
         companyRepository.saveAll(allCompaniesList);
         return allCompaniesList;

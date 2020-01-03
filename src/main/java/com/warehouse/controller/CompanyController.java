@@ -31,9 +31,9 @@ public class CompanyController {
 
     @GetMapping("/transform")
     @CrossOrigin(origins = "http://localhost:3000")
-    List<Company> companies(@RequestParam String searchValue) throws IOException {
+    List<Company> companies(@RequestParam String searchValue, @RequestParam Boolean areReviews) throws IOException {
 
-        return companyService.transform(searchValue);
+        return companyService.transform(searchValue, areReviews);
     }
 
     @GetMapping("/review")
@@ -50,9 +50,10 @@ public class CompanyController {
         return new SearchResponse(searchValue, companyService.getPageAmount(searchValue));
     }
 
-   /* @GetMapping("/getReviewsForCompany")
+    @GetMapping("/allProcess")
     @CrossOrigin(origins = "http://localhost:3000")
-    List<Company> companiesWithReviews() throws IOException {
-        return companyService.getCompaniesWithReviews();
-    }*/
+    List<Company> allProcess(@RequestParam String searchValue) throws IOException {
+
+        return companyService.allProcess(searchValue, false);
+    }
 }
